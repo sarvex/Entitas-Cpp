@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -120,19 +120,19 @@ bool Matcher::CompareIndices(const Matcher& matcher) const
 	return true;
 }
 
-auto Matcher::OnEntityAdded() -> const TriggerOnEvent
+auto Matcher::OnEntityAdded() -> const TriggerOnEvent*
 {
-	return TriggerOnEvent(*this, GroupEventType::OnEntityAdded);
+	return new TriggerOnEvent(*this, GroupEventType::OnEntityAdded);
 }
 
-auto Matcher::OnEntityRemoved() -> const TriggerOnEvent
+auto Matcher::OnEntityRemoved() -> const TriggerOnEvent*
 {
-	return TriggerOnEvent(*this, GroupEventType::OnEntityRemoved);
+	return new TriggerOnEvent(*this, GroupEventType::OnEntityRemoved);
 }
 
-auto Matcher::OnEntityAddedOrRemoved() -> const TriggerOnEvent
+auto Matcher::OnEntityAddedOrRemoved() -> const TriggerOnEvent*
 {
-	return TriggerOnEvent(*this, GroupEventType::OnEntityAddedOrRemoved);
+	return new TriggerOnEvent(*this, GroupEventType::OnEntityAddedOrRemoved);
 }
 
 bool Matcher::operator ==(const Matcher right) const

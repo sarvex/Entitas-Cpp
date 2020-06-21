@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -33,9 +33,9 @@ class Matcher
 		auto GetHashCode() const -> unsigned int;
 		bool CompareIndices(const Matcher& matcher) const;
 
-		auto OnEntityAdded() -> const TriggerOnEvent;
-		auto OnEntityRemoved() -> const TriggerOnEvent;
-		auto OnEntityAddedOrRemoved() -> const TriggerOnEvent;
+		auto OnEntityAdded() -> const TriggerOnEvent*;
+		auto OnEntityRemoved() -> const TriggerOnEvent*;
+		auto OnEntityAddedOrRemoved() -> const TriggerOnEvent*;
 
 		bool operator ==(const Matcher right) const;
 
@@ -81,7 +81,7 @@ namespace
 #define FOR_EACH(MODIFIER,...) GET_MACRO(__VA_ARGS__, FUNC_6, FUNC_5, FUNC_4, FUNC_3, FUNC_2, FUNC_1)(MODIFIER, __VA_ARGS__)
 
 #define COMPONENT_GET_TYPE_ID(COMPONENT_CLASS) EntitasPP::ComponentTypeId::Get<COMPONENT_CLASS>()
-#define Matcher_AllOf(...) (EntitasPP::Matcher)EntitasPP::Matcher::AllOf(std::vector<EntitasPP::ComponentId>({ FOR_EACH(COMPONENT_GET_TYPE_ID, __VA_ARGS__) }))
-#define Matcher_AnyOf(...) (EntitasPP::Matcher)EntitasPP::Matcher::AnyOf(std::vector<EntitasPP::ComponentId>({ FOR_EACH(COMPONENT_GET_TYPE_ID, __VA_ARGS__) }))
-#define Matcher_NoneOf(...) (EntitasPP::Matcher)EntitasPP::Matcher::NoneOf(std::vector<EntitasPP::ComponentId>({ FOR_EACH(COMPONENT_GET_TYPE_ID, __VA_ARGS__) }))
+#define Matcher_AllOf(...) ((EntitasPP::Matcher)EntitasPP::Matcher::AllOf(std::vector<EntitasPP::ComponentId>({ FOR_EACH(COMPONENT_GET_TYPE_ID, __VA_ARGS__) })))
+#define Matcher_AnyOf(...) ((EntitasPP::Matcher)EntitasPP::Matcher::AnyOf(std::vector<EntitasPP::ComponentId>({ FOR_EACH(COMPONENT_GET_TYPE_ID, __VA_ARGS__) })))
+#define Matcher_NoneOf(...) ((EntitasPP::Matcher)EntitasPP::Matcher::NoneOf(std::vector<EntitasPP::ComponentId>({ FOR_EACH(COMPONENT_GET_TYPE_ID, __VA_ARGS__) })))
 }

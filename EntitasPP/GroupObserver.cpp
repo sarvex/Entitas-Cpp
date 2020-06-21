@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -8,14 +8,14 @@
 
 namespace EntitasPP
 {
-GroupObserver::GroupObserver(std::shared_ptr<Group> group, const GroupEventType eventType)
+GroupObserver::GroupObserver(std::weak_ptr<Group> group, const GroupEventType eventType)
 {
 	mGroups.push_back(group);
 	mEventTypes.push_back(eventType);
 	mAddEntityCache = std::bind(&GroupObserver::AddEntity, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 }
 
-GroupObserver::GroupObserver(std::vector<std::shared_ptr<Group>> groups, std::vector<GroupEventType> eventTypes)
+GroupObserver::GroupObserver(std::vector<std::weak_ptr<Group>> groups, std::vector<GroupEventType> eventTypes)
 {
 	mGroups = groups;
 	mEventTypes = eventTypes;
@@ -38,7 +38,7 @@ void GroupObserver::Activate()
 {
 	for(unsigned int i = 0, groupCount = mGroups.size(); i < groupCount; ++i)
 	{
-		auto g = mGroups[i];
+		auto g = mGroups[i].lock();
 		auto eventType = mEventTypes[i];
 
 		if(eventType == GroupEventType::OnEntityAdded)
@@ -64,10 +64,15 @@ void GroupObserver::Activate()
 
 void GroupObserver::Deactivate()
 {
-	for(const auto &g : mGroups)
+	for(unsigned int i = 0, groupCount = mGroups.size(); i < groupCount; ++i)
 	{
-		g->OnEntityAdded -= mAddEntityCache;
-		g->OnEntityRemoved -= mAddEntityCache;
+		if (!mGroups[i].expired())
+		{
+			auto g = mGroups[i].lock();
+
+			g->OnEntityAdded -= mAddEntityCache;
+			g->OnEntityRemoved -= mAddEntityCache;
+		}
 	}
 
 	ClearCollectedEntities();

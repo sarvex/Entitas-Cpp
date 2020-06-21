@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -18,8 +18,8 @@ class Group;
 class GroupObserver
 {
 	public:
-		GroupObserver(std::shared_ptr<Group> group, const GroupEventType eventType);
-		GroupObserver(std::vector<std::shared_ptr<Group>> groups, std::vector<GroupEventType> eventTypes);
+		GroupObserver(std::weak_ptr<Group> group, const GroupEventType eventType);
+		GroupObserver(std::vector<std::weak_ptr<Group>> groups, std::vector<GroupEventType> eventTypes);
 		~GroupObserver();
 
 		void Activate();
@@ -31,7 +31,7 @@ class GroupObserver
 		void AddEntity(std::shared_ptr<Group> group, EntityPtr entity, ComponentId index, IComponent* component);
 
 		std::unordered_set<EntityPtr> mCollectedEntities;
-		std::vector<std::shared_ptr<Group>> mGroups;
+		std::vector<std::weak_ptr<Group>> mGroups;
 		std::vector<GroupEventType> mEventTypes;
 		std::function<void(std::shared_ptr<Group>, EntityPtr, ComponentId, IComponent*)> mAddEntityCache;
 };

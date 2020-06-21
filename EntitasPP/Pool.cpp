@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -14,6 +14,9 @@ Pool::Pool(const unsigned int startCreationIndex)
 {
 	mCreationIndex = startCreationIndex;
 	mOnEntityReleasedCache = std::bind(&Pool::OnEntityReleased, this, std::placeholders::_1);
+	mOnComponentAddedCache = std::bind(&Pool::UpdateGroupsComponentAddedOrRemoved, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	mOnComponentRemovedCache = std::bind(&Pool::UpdateGroupsComponentAddedOrRemoved, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	mOnComponentReplacedCache = std::bind(&Pool::UpdateGroupsComponentReplaced, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 }
 
 Pool::~Pool()
@@ -56,9 +59,9 @@ auto Pool::CreateEntity() -> EntityPtr
 	}
 	else
 	{
-		entity = EntityPtr(new Entity(&mComponentPools), [](void* entity)
+		entity = EntityPtr(new Entity(&mComponentPools), [](Entity* entity)
 		{
-			(static_cast<Entity*>(entity)->OnEntityReleased(static_cast<Entity*>(entity)));
+			entity->OnEntityReleased(entity);
 		});
 	}
 
@@ -69,18 +72,9 @@ auto Pool::CreateEntity() -> EntityPtr
 	mEntities.insert(entity);
 	mEntitiesCache.clear();
 
-	entity->OnComponentAdded += [this](EntityPtr entity, ComponentId index, IComponent* component)
-	{
-		UpdateGroupsComponentAddedOrRemoved(entity, index, component);
-	};
-	entity->OnComponentRemoved += [this](EntityPtr entity, ComponentId index, IComponent* component)
-	{
-		UpdateGroupsComponentAddedOrRemoved(entity, index, component);
-	};
-	entity->OnComponentReplaced += [this](EntityPtr entity, ComponentId index, IComponent* previousComponent, IComponent* newComponent)
-	{
-		UpdateGroupsComponentReplaced(entity, index, previousComponent, newComponent);
-	};
+	entity->OnComponentAdded += mOnComponentAddedCache;
+	entity->OnComponentRemoved += mOnComponentRemovedCache;
+	entity->OnComponentReplaced += mOnComponentReplacedCache;
 
 	entity->OnEntityReleased.Clear();
 	entity->OnEntityReleased += mOnEntityReleasedCache;
@@ -137,7 +131,7 @@ void Pool::DestroyAllEntities()
 
 	if (! mRetainedEntities.empty())
 	{
-		// Try calling Pool.ClearGroups() and SystemContainer.ClearReactiveSystems() before calling pool.DestroyAllEntities() to avoid memory leaks
+		// Try calling pool.ClearGroups() and systemContainer.ClearReactiveSystems() before calling pool.DestroyAllEntities() to avoid memory leaks
 		throw std::runtime_error("Error, pool detected retained entities although all entities got destroyed. Did you release all entities?");
 	}
 }
@@ -219,6 +213,7 @@ void Pool::ClearComponentPool(const ComponentId index)
 {
 	while(! mComponentPools.at(index).empty())
 	{
+		delete mComponentPools.at(index).top();
 		mComponentPools.at(index).pop();
 	}
 }
@@ -284,16 +279,19 @@ void Pool::UpdateGroupsComponentAddedOrRemoved(EntityPtr entity, ComponentId ind
 
 	if (groups.size() > 0)
 	{
-		auto events = std::vector<Group::GroupChanged*>();
+		auto events = std::vector<std::pair<std::weak_ptr<Group>, Group::GroupChanged*>>();
 
 		for (int i = 0, groupsCount = groups.size(); i < groupsCount; ++i)
 		{
-			events.push_back(groups[i].lock()->HandleEntity(entity));
+			events.push_back(std::make_pair(groups[i], groups[i].lock()->HandleEntity(entity)));
 		}
 
-		for (int i = 0, eventsCount = events.size(); i < eventsCount; ++i)
+		for (const auto &pair : events)
 		{
-			(*events[i])(groups[i].lock(), entity, index, component);
+			if (pair.second != nullptr)
+			{
+				(*pair.second)(pair.first.lock(), entity, index, component);
+			}
 		}
 	}
 }

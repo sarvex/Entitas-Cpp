@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -9,7 +9,7 @@
 namespace EntitasPP
 {
 ReactiveSystem::ReactiveSystem(Pool* pool, std::shared_ptr<IReactiveSystem> subsystem) :
-	ReactiveSystem(pool, subsystem, std::vector<TriggerOnEvent>(1, subsystem->trigger))
+	ReactiveSystem(pool, subsystem, std::vector<TriggerOnEvent>(1, *subsystem->trigger))
 {
 }
 
@@ -38,7 +38,7 @@ ReactiveSystem::ReactiveSystem(Pool* pool, std::shared_ptr<IReactiveExecuteSyste
 	}
 
 	unsigned int triggersLength = triggers.size();
-	auto groups = std::vector<std::shared_ptr<Group>>(triggersLength);
+	auto groups = std::vector<std::weak_ptr<Group>>(triggersLength);
 	auto eventTypes = std::vector<GroupEventType>(triggersLength);
 
 	for(unsigned int i = 0; i < triggersLength; ++i)

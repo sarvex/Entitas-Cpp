@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -80,9 +80,12 @@ class IReactiveExecuteSystem : public ISystem
 class IReactiveSystem : public IReactiveExecuteSystem
 {
 	public:
-		virtual ~IReactiveSystem() = default;
+		virtual ~IReactiveSystem()
+		{
+			delete trigger;
+		};
 
-		TriggerOnEvent trigger;
+		const TriggerOnEvent* trigger;
 };
 
 class IMultiReactiveSystem : public IReactiveExecuteSystem

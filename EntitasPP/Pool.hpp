@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Juan Delgado (JuDelCo)
+// Copyright (c) 2020 Juan Delgado (JuDelCo)
 // License: MIT License
 // MIT License web page: https://opensource.org/licenses/MIT
 
@@ -66,6 +66,9 @@ class Pool
 
 		std::vector<EntityPtr> mEntitiesCache;
 		std::function<void(Entity*)> mOnEntityReleasedCache;
+		std::function<void(EntityPtr, ComponentId, IComponent*)> mOnComponentAddedCache;
+		std::function<void(EntityPtr, ComponentId, IComponent*)> mOnComponentRemovedCache;
+		std::function<void(EntityPtr, ComponentId, IComponent*, IComponent*)> mOnComponentReplacedCache;
 };
 
 template <typename T>

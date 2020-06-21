@@ -1,11 +1,9 @@
 Entitas++
 =====================
 
-Entitas++ is a fast Entity Component System Framework (ECS) C++11 port of [Entitas for C# and Unity](https://github.com/sschmid/Entitas-CSharp).
+Entitas++ is a fast Entity Component System Framework (ECS) C++11 port of [Entitas v0.29.0 for C# and Unity](https://github.com/sschmid/Entitas-CSharp/tree/0.29.0).
 
 There are some differences between both, so please check the code and notes below !
-
-The framework will follow a [semantic versioning](http://semver.org/).
 
 Any feedback is welcome !
 
@@ -224,7 +222,7 @@ public class MoveSystem : IExecuteSystem, ISetPool {
 ###### Entitas++
 ```cpp
 class MoveSystem : public IExecuteSystem, public ISetPool {
-    std::shared_ptr<Group> _group;
+    std::weak_ptr<Group> _group;
 
     public:
         void SetPool(Pool* pool) {
@@ -232,7 +230,7 @@ class MoveSystem : public IExecuteSystem, public ISetPool {
         }
 
         void Execute() {
-            for (auto &e : _group->GetEntities()) {
+            for (auto &e : _group.lock()->GetEntities()) {
                 auto move = e->Get<Move>();
                 auto pos = e->Get<Position>();
                 e->Replace<Position>(pos->x, pos->y + move->speed, pos->z);
@@ -262,11 +260,9 @@ public class RenderPositionSystem : IReactiveSystem {
 ###### Entitas++
 ```cpp
 class RenderPositionSystem : public IReactiveSystem {
-    TriggerOnEvent trigger;
-
     public:
         RenderPositionSystem() {
-        	trigger = Matcher_AllOf(Position, View)->OnEntityAdded();
+        	trigger = Matcher_AllOf(Position, View).OnEntityAdded();
         }
 
         void Execute(std::vector<EntityPtr> entities) {
@@ -290,22 +286,12 @@ Notes
 - All 'ToString()' methods were removed. If you need to track identifiers between entities I suggest you to use your own custom Component.
 - AERC (Automatic Entity Reference Counting) was implemented using smart pointers. (Yeah! Take that C# :stuck_out_tongue_winking_eye:)
 
-If you need more documentation of the architecture of the framework, please go to [Entitas C# Wiki](https://github.com/sschmid/Entitas-CSharp/wiki) since this framework has a lot on common with the original C# one.
-
-Planned
-=====================
-
-- Unit Tests
-- *Moar* Unit Tests
-- Perfomance Tests
-- More robust code (more tested :smile:)
-- Examples
-- Better Readme.md (suggestions?)
+If you need more documentation of the architecture of the framework, please go to [Entitas v0.29.0 C# Wiki](https://github.com/sschmid/Entitas-CSharp/wiki/Home/18f70d987d94be972c179bbd71b3a175263c0f04) since this framework has a lot on common with the original C# one.
 
 The MIT License (MIT)
 =====================
 
-Copyright © 2016 Juan Delgado (JuDelCo)
+Copyright © 2020 Juan Delgado (JuDelCo)
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
